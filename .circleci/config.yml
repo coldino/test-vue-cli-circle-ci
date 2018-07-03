@@ -1,0 +1,35 @@
+defaults: &defaults
+  working_directory: ~/vccci
+  docker:
+    - image: circleci/node:10-browsers
+
+
+version: 2
+jobs:
+  build:
+    <<: *defaults
+    steps:
+      - checkout
+      - run: node --version
+      - run: npm --version
+      - run: npm install
+      - run: npm run build
+      - store_artefacts:
+          path: docs/
+
+  test:
+    <<: *defaults
+    steps:
+      run: npm run test:unit
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master

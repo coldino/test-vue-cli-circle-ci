@@ -18,7 +18,7 @@ jobs:
   test:
     <<: *defaults
     steps:
-      run: npm run test:unit
+      - run: npm run test:unit
 
 workflows:
   version: 2

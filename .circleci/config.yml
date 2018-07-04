@@ -40,7 +40,7 @@ workflows:
   build-test-and-approval-deploy:
     jobs:
       - prepare
-      - build
+      - build:
           requires:
             - prepare
       - test:

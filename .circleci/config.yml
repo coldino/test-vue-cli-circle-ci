@@ -9,10 +9,25 @@ jobs:
   build:
     <<: *defaults
     steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Branch }}-{{ .Revision }}
+            - repo-{{ .Branch }}-
+            - repo-
       - checkout
-      - run: node --version
-      - run: npm --version
+      - save_cache:
+          key: repo-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - ".git"
+      - restore_cache:
+          keys:
+          - node_modules-{{ checksum "package-lock.json" }}
+          - node_modules-
       - run: npm install
+      - save_cache:
+          paths:
+            - node_modules
+          key: node_modules-{{ checksum "package-lock.json" }}
       - run: npm run test:unit
       - run: npm run build
       - persist_to_workspace:
@@ -23,6 +38,16 @@ jobs:
   deploy:
     <<: *defaults
     steps:
+      - restore_cache:
+          keys:
+            - repo-{{ .Branch }}-{{ .Revision }}
+            - repo-{{ .Branch }}-
+            - repo-
+      - checkout
+      - restore_cache:
+          keys:
+          - node_modules-{{ checksum "package-lock.json" }}
+      - run: npm install
       - attach_workspace:
           at: ~/vccci/dist
       - run: npx firebase deploy --non-interactive --token "$FIREBASE_TOKEN"

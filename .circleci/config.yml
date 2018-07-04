@@ -6,27 +6,19 @@ defaults: &defaults
 
 version: 2
 jobs:
-  prepare:
+  build:
     <<: *defaults
     steps:
       - checkout
       - run: node --version
       - run: npm --version
       - run: npm install
-
-  build:
-    <<: *defaults
-    steps:
+      - run: npm run test:unit
       - run: npm run build
       - persist_to_workspace:
           root: ~/vccci/dist
           paths:
             - ./
-
-  test:
-    <<: *defaults
-    steps:
-      - run: npm run test:unit
 
   deploy:
     <<: *defaults
@@ -39,18 +31,11 @@ workflows:
   version: 2
   build-test-and-approval-deploy:
     jobs:
-      - prepare
-      - build:
-          requires:
-            - prepare
-      - test:
-          requires:
-            - prepare
+      - build
       - hold:
           type: approval
           requires:
            - build
-           - test
           filters:
             branches:
               only: master
